@@ -5,7 +5,7 @@ const init = () => {
   const MESSAGE_SW_NOT_AVAILABLE = 'Service Worker NOT available';
 
   if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register()
+    navigator.serviceWorker.register('sw.js')
       .then(() => {
         output.innerHTML = MESSAGE_SW_REGISTERED;
       })
