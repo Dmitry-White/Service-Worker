@@ -17,7 +17,7 @@ const init = () => {
 
   const swNotAvailableHandler = () => {
     output.innerHTML = MESSAGE_SW_NOT_AVAILABLE;
-  }
+  };
 
   const swStateChangeHandler = (swInstalling) => {
     if (swInstalling.state === 'installed') {
