@@ -3,14 +3,44 @@ const init = () => {
   const MESSAGE_SW_REGISTERED = 'Service Worker registered properly';
   const MESSAGE_SW_NOT_REGISTERED = 'Service Worker NOT registered';
   const MESSAGE_SW_NOT_AVAILABLE = 'Service Worker NOT available';
+  const MESSAGE_SW_NEW_INSTALLED = 'A new service worker is installed and waiting';
+  const MESSAGE_SW_NEW_CONTROLLING = 'A new Service Worker is now controlling the page';
+
+  const swUpdate = () => {
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.getRegistration()
+        .then((registration) => registration.update);
+  };
+
+  const swRegisteredHandler = () => {
+    output.innerHTML = MESSAGE_SW_REGISTERED;
+  };
+
+  const swNotRegisteredHandler = () => {
+    output.innerHTML = MESSAGE_SW_NOT_REGISTERED;
+  };
+
+  const swStateChangeHandler = (swInstalling) => {
+    if (swInstalling.state === 'installed') {
+      output.innerHTML = MESSAGE_SW_NEW_INSTALLED;
+    } else {
+      output.innerHTML = MESSAGE_SW_NEW_CONTROLLING;
+    }
+  };
+
+  const swUpdateFoundHandler = (registration) => {
+    const swInstalling = registration.installing;
+    swInstalling.addEventListener('statechange', () => swStateChangeHandler(swInstalling));
+  };
 
   if ('serviceWorker' in navigator) {
     navigator.serviceWorker.register('sw.js')
-      .then(() => {
-        output.innerHTML = MESSAGE_SW_REGISTERED;
-      })
-      .catch(() => {
-        output.innerHTML = MESSAGE_SW_NOT_REGISTERED;
+      .then(swRegisteredHandler)
+      .catch(swNotRegisteredHandler);
+
+    navigator.serviceWorker.getRegistration()
+      .then((registration) => {
+        registration.addEventListener('updatefound', () => swUpdateFoundHandler(registration));
       });
   } else {
     output.innerHTML = MESSAGE_SW_NOT_AVAILABLE;
