@@ -1,6 +1,7 @@
 const init = () => {
   const output = document.querySelector('output');
   const updateButton = document.querySelector('#update');
+  const unregisterButton = document.querySelector('#unregister');
   const MESSAGE_SW_REGISTERED = 'Service Worker registered properly';
   const MESSAGE_SW_NOT_REGISTERED = 'Service Worker NOT registered';
   const MESSAGE_SW_NOT_AVAILABLE = 'Service Worker NOT available';
@@ -40,6 +41,14 @@ const init = () => {
     }
   };
 
+  const swUnregister = () => {
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.getRegistration()
+        .then((registration) => registration.unregister())
+        .catch(swNotAvailableHandler);
+    }
+  };
+
   if ('serviceWorker' in navigator) {
     navigator.serviceWorker.register('sw.js')
       .then(swRegisteredHandler)
@@ -54,6 +63,7 @@ const init = () => {
   }
 
   updateButton.addEventListener('click', swUpdate);
+  unregisterButton.addEventListener('click', swUnregister);
 };
 
 window.addEventListener('load', init);
