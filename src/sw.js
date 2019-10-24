@@ -6,18 +6,51 @@ importScripts('events.js');
 
 // eslint-disable-next-line
 self.addEventListener('fetch', (e) => {
-  console.log(`Fetching ${e.request.url}`);
+  const {
+    url,
+    cache,
+    credential,
+    destination,
+    method,
+    referrer,
+  } = e.request;
+
+  console.log(`Fetching ${url}`);
+
+  const parsedUrl = new URL(url);
+
+  if (parsedUrl.pathname === '/src/') {
+    return;
+  }
+
+  if (parsedUrl.pathname.match(/^\/src\/api\/*/)) {
+    console.log('!!!');
+    const object = {
+      temp: 42,
+    };
+
+    const jsonResponse = new Response(JSON.stringify(object), {
+      status: 200,
+      statusText: 'OK',
+      headers: {
+        'Content-type': 'application/json',
+      },
+    });
+
+    e.respondWith(jsonResponse);
+  }
+
   const body = `
-  <!DOCTYPE html>
-  <title>Service Worker HTML generation</title>
-  <h1>The URL is ${e.request.url}</h1>
-  <ul>
-    <li>Cache: ${e.request.cache}</li>
-    <li>Credential: ${e.request.credential}</li>
-    <li>Destination: ${e.request.destination}</li>
-    <li>Method: ${e.request.method}</li>
-    <li>Referrer: ${e.request.referrer}</li>
-  </ul> 
+    <!DOCTYPE html>
+    <title>Service Worker HTML generation</title>
+    <h1>The URL is ${url}</h1>
+    <ul>
+      <li>Cache: ${cache}</li>
+      <li>Credential: ${credential}</li>
+      <li>Destination: ${destination}</li>
+      <li>Method: ${method}</li>
+      <li>Referrer: ${referrer}</li>
+    </ul> 
   `;
 
   const response = new Response(body, {
