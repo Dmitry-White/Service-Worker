@@ -19,11 +19,11 @@ self.addEventListener('fetch', (e) => {
 
   const parsedUrl = new URL(url);
 
-  if (parsedUrl.pathname === '/src/') {
+  if (parsedUrl.pathname === '/basics/') {
     return;
   }
 
-  if (parsedUrl.pathname.match(/^\/src\/api\/*/)) {
+  if (parsedUrl.pathname.match(/^\/basics\/api\/*/)) {
     console.log('!!!');
     const object = {
       temp: 42,

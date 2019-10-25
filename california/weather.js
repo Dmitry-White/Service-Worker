@@ -1,19 +1,20 @@
-window.addEventListener("load", () => {
-    document.querySelector("ul#weather").innerHTML = "";
-    Promise.all([fetchWeather("san diego"), fetchWeather("sacramento"), fetchWeather("fresno")])
-        .then(responses => {
-            responses.forEach(response => {
-                response.json()
-                    .then(data => {
-                        const li = `<li>${data[0].name}: 
+const fetchWeather = (city) => fetch(`http://explorecalifornia.org/api/weather/?city=${encodeURIComponent(city)}`);
+
+const init = () => {
+  const ulWeather = document.querySelector('ul#weather');
+  ulWeather.innerHTML = '';
+  Promise.all([fetchWeather('san diego'), fetchWeather('sacramento'), fetchWeather('fresno')])
+    .then((responses) => {
+      responses.forEach((response) => {
+        response.json()
+          .then((data) => {
+            const li = `<li>${data[0].name}: 
                                 ${Math.round(data[0].forecast[0].temp_min)}F -
                                 ${Math.round(data[0].forecast[0].temp_max)}F</li>`;
-                        document.querySelector("ul#weather").innerHTML += li;
-                    })
-            })
-        })
-});
+            ulWeather.innerHTML += li;
+          });
+      });
+    });
+};
 
-function fetchWeather(city) {
-    return fetch("http://explorecalifornia.org/api/weather/?city=" + encodeURIComponent(city));
-}
+window.addEventListener('load', init);
