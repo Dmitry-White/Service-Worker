@@ -11,10 +11,23 @@ const precacheList = [
   '_images/desert_bug.gif', '_images/mission_look.jpg', '_images/tour_badge.png',
 ];
 
-// eslint-disable-next-line
-self.addEventListener('install', event => {
+const installHandler = (event) => {
   event.waitUntil(
     caches.open('california-assests')
       .then((cache) => cache.addAll(precacheList)),
   );
-});
+};
+
+// Cache-first policy
+const fetchHandler = (event) => {
+  const { request } = event;
+  const cachePromise = caches.match(request)
+    .then((response) => (response || fetch(request)));
+  event.respondWith(cachePromise);
+};
+
+// eslint-disable-next-line
+self.addEventListener('install', installHandler);
+
+// eslint-disable-next-line
+self.addEventListener('fetch', fetchHandler);
