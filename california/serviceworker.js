@@ -26,9 +26,24 @@ const fetchHandler = (event) => {
   const isCSS = parsedUrl.pathname.match(/^\/_css*/);
   const isFont = parsedUrl.pathname.match(/^\/_fonts*/);
 
+  const putInCache = (originRequest) => (networkResponse) => caches.open(CACHE_NAME)
+    .then((cache) => {
+      cache.put(originRequest, networkResponse.clone());
+      return networkResponse;
+    });
+
   // Network-first policy
-  const networkPromise = () => fetch(request)
-    .catch(() => caches.match(request));
+  // const networkPromise = () => fetch(request)
+  //   .catch(() => caches.match(request));
+
+  // Stale While Revalidate policy
+  const stalePromise = () => caches.match(request)
+    .then((response) => {
+      const staleFetch = fetch(request)
+        .then(putInCache(request));
+
+      return response || staleFetch;
+    });
 
   // Cache-first policy
   const cachePromise = () => caches.match(request)
@@ -37,18 +52,14 @@ const fetchHandler = (event) => {
         return response;
       } if (isFont) {
         const fetchRequest = fetch(request)
-          .then((networkResponse) => caches.open(CACHE_NAME)
-            .then((cache) => {
-              cache.put(request, networkResponse.clone());
-              return networkResponse;
-            }));
+          .then(putInCache(request));
         return fetchRequest;
       }
       return fetch(request);
     });
 
   if (isCSS) {
-    event.respondWith(networkPromise());
+    event.respondWith(stalePromise());
   } else event.respondWith(cachePromise());
 };
 
