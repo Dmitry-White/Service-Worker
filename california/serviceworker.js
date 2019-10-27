@@ -11,9 +11,11 @@ const precacheList = [
   '_images/desert_bug.gif', '_images/mission_look.jpg', '_images/tour_badge.png',
 ];
 
+const CACHE_NAME = 'california-assests';
+
 const installHandler = (event) => {
   event.waitUntil(
-    caches.open('california-assests')
+    caches.open(CACHE_NAME)
       .then((cache) => cache.addAll(precacheList)),
   );
 };
@@ -21,6 +23,8 @@ const installHandler = (event) => {
 const fetchHandler = (event) => {
   const { request } = event;
   const parsedUrl = new URL(request.url);
+  const isCSS = parsedUrl.pathname.match(/^\/_css*/);
+  const isFont = parsedUrl.pathname.match(/^\/_fonts*/);
 
   // Network-first policy
   const networkPromise = () => fetch(request)
@@ -28,9 +32,22 @@ const fetchHandler = (event) => {
 
   // Cache-first policy
   const cachePromise = () => caches.match(request)
-    .then((response) => (response || fetch(request)));
+    .then((response) => {
+      if (response) {
+        return response;
+      } if (isFont) {
+        const fetchRequest = fetch(request)
+          .then((networkResponse) => caches.open(CACHE_NAME)
+            .then((cache) => {
+              cache.put(request, networkResponse.clone());
+              return networkResponse;
+            }));
+        return fetchRequest;
+      }
+      return fetch(request);
+    });
 
-  if (parsedUrl.pathname.match(/^\/_css*/)) {
+  if (isCSS) {
     event.respondWith(networkPromise());
   } else event.respondWith(cachePromise());
 };
