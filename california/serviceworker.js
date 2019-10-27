@@ -1,5 +1,5 @@
 const precacheList = [
-  '/california', 'mission.html', 'resources.html', 'tours.html',
+  '/', 'mission.html', 'resources.html', 'tours.html',
   'app.js', 'weather.js',
   '_css/fonts.css', '_css/main.css', '_css/mobile.css', '_css/tablet.css',
   '_images/back_bug.gif', '_images/desert_desc_bug.gif', '_images/nature_desc_bug.gif',
@@ -18,12 +18,21 @@ const installHandler = (event) => {
   );
 };
 
-// Cache-first policy
 const fetchHandler = (event) => {
   const { request } = event;
-  const cachePromise = caches.match(request)
+  const parsedUrl = new URL(request.url);
+
+  // Network-first policy
+  const networkPromise = () => fetch(request)
+    .catch(() => caches.match(request));
+
+  // Cache-first policy
+  const cachePromise = () => caches.match(request)
     .then((response) => (response || fetch(request)));
-  event.respondWith(cachePromise);
+
+  if (parsedUrl.pathname.match(/^\/_css*/)) {
+    event.respondWith(networkPromise());
+  } else event.respondWith(cachePromise());
 };
 
 // eslint-disable-next-line
