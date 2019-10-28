@@ -20,6 +20,16 @@ const installHandler = (event) => {
   );
 };
 
+const cleanHandler = (event) => {
+  const cahceWhitelist = [`${CACHE_NAME}-v2`];
+  event.waitUntil(
+    caches.keys()
+      .then((names) => Promise.all(names.map((cacheName) => {
+        if (cahceWhitelist.indexOf(cacheName) === -1) return caches.delete(cacheName);
+      }))),
+  );
+};
+
 const fetchHandler = (event) => {
   const { request } = event;
   const parsedUrl = new URL(request.url);
@@ -69,6 +79,9 @@ const fetchHandler = (event) => {
 
 // eslint-disable-next-line
 self.addEventListener('install', installHandler);
+
+// eslint-disable-next-line
+self.addEventListener('activate', cleanHandler);
 
 // eslint-disable-next-line
 self.addEventListener('fetch', fetchHandler);
