@@ -1,6 +1,6 @@
 const precacheList = [
   '/', 'mission.html', 'resources.html', 'tours.html',
-  'app.js', 'weather.js',
+  'app.js', 'weather.js', 'offline.json',
   '_css/fonts.css', '_css/main.css', '_css/mobile.css', '_css/tablet.css',
   '_images/back_bug.gif', '_images/desert_desc_bug.gif', '_images/nature_desc_bug.gif',
   '_images/backpack_bug.gif', '_images/flag.jpg', '_images/snow_desc_bug.gif',
@@ -23,6 +23,8 @@ const installHandler = (event) => {
 const fetchHandler = (event) => {
   const { request } = event;
   const parsedUrl = new URL(request.url);
+  const isApi = parsedUrl.host === 'explorecalifornia.org';
+  const isOffline = !navigator.onLine;
   const isCSS = parsedUrl.pathname.match(/^\/_css*/);
   const isFont = parsedUrl.pathname.match(/^\/_fonts*/);
 
@@ -58,7 +60,9 @@ const fetchHandler = (event) => {
       return fetch(request);
     });
 
-  if (isCSS) {
+  if (isApi && isOffline) {
+    event.respondWith(fetch('offline.json'));
+  } else if (isCSS) {
     event.respondWith(stalePromise());
   } else event.respondWith(cachePromise());
 };
